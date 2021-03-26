@@ -30,6 +30,14 @@ class Agenda(inkycal_module):
     }
 
   optional = {
+    "ical_user" : {
+      "label":"iCalendar user, separated with a comma",
+      },
+
+    "ical_password" : {
+      "label":"iCalendar password, separated with a comma",
+      },
+
     "ical_files" : {
       "label":"iCalendar filepaths, separated with a comma",
       },
@@ -67,7 +75,7 @@ class Agenda(inkycal_module):
     self.time_format = config['time_format']
     self.language = config['language']
 
-    # Check if ical_files is an empty string
+    # Check if ical_urls is an empty string
     if config['ical_urls'] and isinstance(config['ical_urls'], str):
       self.ical_urls = config['ical_urls'].split(',')
     else:
@@ -77,7 +85,19 @@ class Agenda(inkycal_module):
     if config['ical_files'] and isinstance(config['ical_files'], str):
       self.ical_files = config['ical_files'].split(',')
     else:
-      self.ical_files = config['ical_files']
+      self.ical_files = None
+
+    # Check if ical_user is an empty string
+    if config['ical_user'] and isinstance(config['ical_user'], str):
+      self.ical_user = config['ical_user'].split(',')
+    else:
+      self.ical_user = None
+
+    # Check if ical_password is an empty string
+    if config['ical_password'] and isinstance(config['ical_password'], str):
+      self.ical_password = config['ical_password'].split(',')
+    else:
+      self.ical_password = None
 
     # Additional config
     self.timezone = get_system_tz()
@@ -122,7 +142,7 @@ class Agenda(inkycal_module):
     parser = self.ical
 
     if self.ical_urls:
-      parser.load_url(self.ical_urls)
+      parser.load_url(self.ical_urls, self.ical_user, self.ical_password)
 
     if self.ical_files:
       parser.load_from_file(self.ical_files)

@@ -14,7 +14,7 @@ Copyright by aceisace
 """
 
 import arrow
-from urllib.request import urlopen
+import urllib.request
 import logging
 import time
 import os
@@ -49,31 +49,43 @@ class iCalendar:
     add username and password to access protected files
     """
 
-    if type(url) == list:
-      if (username == None) and (password == None):
-        ical = [Calendar.from_ical(str(urlopen(_).read().decode()))
-                                   for _ in url]
-      else:
-        ical = [auth_ical(each_url, username, password) for each_url in url]
-    elif type(url) == str:
-      if (username == None) and (password == None):
-        ical = [Calendar.from_ical(str(urlopen(url).read().decode()))]
-      else:
-        ical = [auth_ical(url, username, password)]
-    else:
-      raise Exception (f"Input: '{url}' is not a string or list!")
-
-
     def auth_ical(url, uname, passwd):
       """Authorisation helper for protected ical files"""
+      logger.error("url: %s", url)
+      logger.error("user: %s , pwd: %s", uname, passwd)
+
+      # protocols = ['https://', 'http://']
+
+      # for proto in protocols:
+      #   if url.startswith(proto):
+      #     url = url[len(proto):] # remove protocol from url
+      #     url = proto + uname + ':' + passwd + '@' + url
+      #     logger.error("url: %s", url)
+      #     break
+      
+      # ical = Calendar.from_ical(str(urllib.request.urlopen(url).read().decode()))
 
       # Credit to Joshka
       password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-      password_mgr.add_password(None, url, username, password)
+      password_mgr.add_password(None, url, uname, passwd)
       handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
       opener = urllib.request.build_opener(handler)
       ical = Calendar.from_ical(str(opener.open(url).read().decode()))
       return ical
+
+    if type(url) == list:
+      if (username == None) and (password == None):
+        ical = [Calendar.from_ical(str(urllib.request.urlopen(_).read().decode()))
+                                   for _ in url]
+      else:
+        ical = [auth_ical(each_url, each_username, each_password) for each_url, each_username, each_password in zip(url, username, password)]
+    elif type(url) == str:
+      if (username == None) and (password == None):
+        ical = [Calendar.from_ical(str(urllib.request.urlopen(url).read().decode()))]
+      else:
+        ical = [auth_ical(url, username, password)]
+    else:
+      raise Exception (f"Input: '{url}' is not a string or list!")
 
     # Add the parsed icalendar/s to the self.icalendars list
     if ical: self.icalendars += ical
